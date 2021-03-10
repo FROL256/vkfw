@@ -10,6 +10,6 @@ Thin Vulkan Helpers library. This library contain seperate helpers for different
 7. vk_texture.h/vk_texture.cpp -- working with textures, 'BaseTexture2D', 'RenderableTexture2D'.
 8. vk_quad.h/vk_quad.cpp -- full screen quad ('FSQuad') and full screen triangle ('QuadRenderer').
 
-# Aknowlegements
+# Acknowledgements
 
 We sincerely thank Huawei for the great project (YBN2019115034) during which this framework was created and for the special permittion to open source code of vkfw at early stage for the educational purposes which we got at 10.03.2021.

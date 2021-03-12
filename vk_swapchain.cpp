@@ -1,5 +1,6 @@
 #include "vk_swapchain.h"
 #include "vk_utils.h"
+#include <cmath>
 
 VkSurfaceTransformFlagsKHR VulkanSwapChain::m_dummy = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 
@@ -133,6 +134,18 @@ VkPresentModeKHR VulkanSwapChain::ChoosePresentMode(const std::vector<VkPresentM
 }
 
 
+std::array<float, 16> rotate4x4Z(float phi)
+{
+  std::array<float, 16> res = {
+      +cosf(phi), sinf(phi), 0.0f, 0.0f,
+      -sinf(phi), cosf(phi), 0.0f, 0.0f,
+      0.0f, 0.0f, 1.0f, 0.0f,
+      0.0f, 0.0f, 0.0f, 1.0f
+  };
+  return res;
+}
+
+
 /**
 * Create the swapchain and get it's images with given width and height
 *
@@ -180,13 +193,13 @@ void VulkanSwapChain::Create(uint32_t &width, uint32_t &height, bool vsync, VkSu
   VkSurfaceTransformFlagsKHR preTransform = surfaceCaps.currentTransform;
   a_preTransform = preTransform;
 #ifdef __ANDROID__
-   if (surfaceCaps.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR ||
+  if (surfaceCaps.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR ||
         surfaceCaps.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR)
-   {
+  {
       // Swap to get identity width and height
       surfaceCaps.currentExtent.height = width;
       surfaceCaps.currentExtent.width = height;
-    }
+  }
 #else
   if (surfaceCaps.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
   {
@@ -200,25 +213,25 @@ void VulkanSwapChain::Create(uint32_t &width, uint32_t &height, bool vsync, VkSu
 
   if (preTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR)
   {
-    m_surfaceMatrix = LiteMath::rotate4x4Z(90.0f * LiteMath::DEG_TO_RAD);
+    m_surfaceMatrix = rotate4x4Z(90.0f * DEG_TO_RAD);
   }
   else if (preTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR)
   {
-    m_surfaceMatrix = LiteMath::rotate4x4Z(270.0f * LiteMath::DEG_TO_RAD);
+    m_surfaceMatrix = rotate4x4Z(270.0f * DEG_TO_RAD);
   }
   else if (preTransform & VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR)
   {
-    m_surfaceMatrix = LiteMath::rotate4x4Z(180.0f * LiteMath::DEG_TO_RAD);
+    m_surfaceMatrix = rotate4x4Z(180.0f * DEG_TO_RAD);
   }
 
   VkCompositeAlphaFlagBitsKHR compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 
   // Select the first available composite alpha format
   std::vector<VkCompositeAlphaFlagBitsKHR> compositeAlphaFlags = {
-          VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-          VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR,
-          VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
-          VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
+      VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+      VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR,
+      VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
+      VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
   };
   for (auto& compositeAlphaFlag : compositeAlphaFlags)
   {
@@ -295,10 +308,10 @@ void VulkanSwapChain::Create(uint32_t &width, uint32_t &height, bool vsync, VkSu
     colorAttachmentView.pNext = nullptr;
     colorAttachmentView.format = m_colorFormat;
     colorAttachmentView.components = {
-            VK_COMPONENT_SWIZZLE_R,
-            VK_COMPONENT_SWIZZLE_G,
-            VK_COMPONENT_SWIZZLE_B,
-            VK_COMPONENT_SWIZZLE_A
+        VK_COMPONENT_SWIZZLE_R,
+        VK_COMPONENT_SWIZZLE_G,
+        VK_COMPONENT_SWIZZLE_B,
+        VK_COMPONENT_SWIZZLE_A
     };
     colorAttachmentView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     colorAttachmentView.subresourceRange.baseMipLevel = 0;

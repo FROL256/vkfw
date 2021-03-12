@@ -1,10 +1,10 @@
 #ifndef VK_SWAPCHAIN_H
 #define VK_SWAPCHAIN_H
 
-#include <vulkan/vulkan.h>
-//#include "LiteMath.h"
+#include "vulkan_wrapper/vulkan_include.h"
 #include <vector>
 #include <cassert>
+#include <array>
 
 struct VulkanAttachment
 {
@@ -15,9 +15,9 @@ struct VulkanAttachment
 
 struct SwapChainSupportDetails
 {
-    VkSurfaceCapabilitiesKHR capabilities;
-    std::vector<VkSurfaceFormatKHR> formats;
-    std::vector<VkPresentModeKHR> presentModes;
+  VkSurfaceCapabilitiesKHR capabilities;
+  std::vector<VkSurfaceFormatKHR> formats;
+  std::vector<VkPresentModeKHR> presentModes;
 };
 
 class VulkanSwapChain
@@ -31,7 +31,7 @@ public:
   static VkSurfaceFormatKHR ChooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
 
   static VkPresentModeKHR ChoosePresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes, bool vsync);
-    
+
   VkResult AcquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t *imageIndex);
 
   VkResult QueuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE);
@@ -43,11 +43,16 @@ public:
   VkExtent2D GetExtent() const {return m_swapchainExtent; }
   VulkanAttachment GetAttachment(uint32_t i) const { assert(i < m_imageCount); return m_attachments[i]; }
 
-  //LiteMath::float4x4 GetSurfaceMatrix() const {return m_surfaceMatrix; }
+  std::array<float, 16> GetSurfaceMatrixArr() const {return m_surfaceMatrix; }
+  const float* GetSurfaceMatrixPtr() const {return m_surfaceMatrix.data(); }
 
 private:
 
-  //LiteMath::float4x4 m_surfaceMatrix;
+  static constexpr float DEG_TO_RAD = float(3.14159265358979323846f) / 180.0f;
+  std::array<float, 16> m_surfaceMatrix = {1.0f, 0.0f, 0.0, 0.0f,
+                                           0.0f, 1.0f, 0.0, 0.0f,
+                                           0.0f, 0.0f, 1.0, 0.0f,
+                                           0.0f, 0.0f, 0.0, 1.0f}; // 4x4 matrix stored by columns
   VkSwapchainKHR m_swapChain = VK_NULL_HANDLE;
   static VkSurfaceTransformFlagsKHR  m_dummy;
 
